@@ -1,10 +1,9 @@
 from rest_framework import serializers
-from config import settings
 from .models import Document
 
 
 class DocumentUploadSerializer(serializers.ModelSerializer):
-    # For staff
+    # For staff document uploads
     file = serializers.FileField()
     date_uploaded = serializers.DateTimeField(
         format="%m-%d-%Y %I:%M %p", read_only=True
@@ -30,14 +29,15 @@ class DocumentDeleteSerializer(serializers.ModelSerializer):
 
 
 class DocumentSerializer(serializers.ModelSerializer):
-    # Read-only serializer
+    # Read-only serializer without link to the file
     date_uploaded = serializers.DateTimeField(
         format="%m-%d-%Y %I:%M %p", read_only=True
     )
 
     class Meta:
         model = Document
-        fields = ["id", "name", "document_type", "number_pages", "date_uploaded"]
+        fields = ["id", "name", "document_type",
+                  "number_pages", "date_uploaded"]
         read_only_fields = [
             "id",
             "name",

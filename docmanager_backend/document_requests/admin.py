@@ -12,7 +12,7 @@ class DocumentRequestUnitAdmin(ModelAdmin):
     list_display = ["id", "get_document_title", "copies"]
 
     def get_document_title(self, obj):
-        return obj.documents.title  # Assuming the Document model has a 'title' field
+        return obj.document.name
 
     get_document_title.short_description = "Document"
 

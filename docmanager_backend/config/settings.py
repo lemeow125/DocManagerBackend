@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "drf_spectacular",
     "drf_spectacular_sidecar",
+    "emails",
     "accounts",
     "documents",
     "document_requests",
@@ -110,7 +111,9 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            BASE_DIR / "emails/templates/",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

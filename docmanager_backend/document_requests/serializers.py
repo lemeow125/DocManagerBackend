@@ -2,6 +2,7 @@ from rest_framework import serializers
 from documents.models import Document
 from documents.serializers import DocumentSerializer, DocumentFileSerializer
 from accounts.models import CustomUser
+from emails.templates import RequestUpdateEmail
 from .models import DocumentRequest, DocumentRequestUnit
 
 
@@ -116,4 +117,13 @@ class DocumentRequestUpdateSerializer(serializers.ModelSerializer):
                 {"error": "Request form status provided is the same as current status"}
             )
 
-        return super().update(instance, validated_data)
+        representation = super().update(instance, validated_data)
+
+        # Send an email on request status update
+        email = RequestUpdateEmail()
+        email.context = {
+            "request_status": instance.status
+        }
+        email.send(to=[instance.requester.email])
+
+        return representation

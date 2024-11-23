@@ -1,0 +1,25 @@
+{% load i18n %}
+
+{% block subject %}
+  {% blocktrans %}USTP - Document Request Form Update{% endblocktrans %}
+{% endblock %}
+
+{% block text_body %}
+  {% blocktrans %}You're receiving this email because your document request has been {{ request_status }}.{% endblocktrans %}
+
+  {% trans 'Please visit the site to check your request:' %}
+  {{ url|safe }}
+{% endblock %}
+
+{% block html_body %}
+  <p>
+    {% blocktrans %}You're receiving this email because your document request has been {{ request_status }}.{% endblocktrans %}
+  </p>
+
+  <p>
+    {% trans 'Please visit the site to check your request:' %}
+  </p>
+  <p>
+    <a href="{{ url|safe }}"></a>
+  </p>
+{% endblock %}

@@ -17,14 +17,15 @@ class Document(models.Model):
     document_type = models.CharField(
         max_length=32, choices=DOCUMENT_TYPE_CHOICES, null=False, blank=False
     )
+    number_pages = models.IntegerField(null=False, blank=False)
 
     def upload_to(instance, filename):
         _, extension = filename.split(".")
-        return "documents/%s_%s.%s" % (now, str(uuid.uuid4()), extension)
+        return "documents/%s_%s.%s" % (now(), str(uuid.uuid4()), extension)
 
     file = models.FileField(upload_to=upload_to)
 
     date_uploaded = models.DateTimeField(default=now, editable=False)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.document_type})"

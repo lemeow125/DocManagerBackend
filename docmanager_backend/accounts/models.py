@@ -32,8 +32,4 @@ class CustomUser(AbstractUser):
 
     def save(self, **kwargs):
         self.username = self.email
-        if self.is_staff:
-            self.role = "staff"
-        elif self.is_superuser:
-            self.role = "admin"
         super().save(**kwargs)

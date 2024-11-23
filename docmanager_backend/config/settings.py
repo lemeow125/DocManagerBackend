@@ -45,7 +45,30 @@ SECRET_KEY = get_secret("SECRET_KEY")
 # SECURITY WARNING: don"t run with debug turned on in production!
 DEBUG = get_secret("DEBUG")
 
+# URL Prefixes
+USE_HTTPS = get_secret("USE_HTTPS")
+URL_SCHEME = "https" if USE_HTTPS else "http"
+# Building Backend URL
+BACKEND_ADDRESS = get_secret("BACKEND_ADDRESS")
+BACKEND_PORT = get_secret("BACKEND_PORT")
+# Building Frontend URL
+FRONTEND_ADDRESS = get_secret("FRONTEND_ADDRESS")
+FRONTEND_PORT = get_secret("FRONTEND_PORT")
+# Full URLs
+BACKEND_URL = f"{URL_SCHEME}://{BACKEND_ADDRESS}"
+FRONTEND_URL = f"{URL_SCHEME}://{BACKEND_ADDRESS}"
+
+# Append port to full URLs if deployed locally
+if not USE_HTTPS:
+    BACKEND_URL += f":{BACKEND_PORT}"
+    FRONTEND_URL += f":{FRONTEND_PORT}"
+
 ALLOWED_HOSTS = ["*"]
+CSRF_TRUSTED_ORIGINS = [
+    FRONTEND_URL,
+    BACKEND_URL,
+    # You can also set up https://*.name.xyz for wildcards here
+]
 
 
 # Application definition
@@ -67,12 +90,14 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",
     "accounts",
     "documents",
+    "document_requests",
     "django_cleanup.apps.CleanupConfig",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -163,7 +188,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-MEDIA_URL = "api/v1/media/"
+MEDIA_URL = f"{BACKEND_URL}/api/v1/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 ROOT_URLCONF = "config.urls"
 STATIC_URL = "static/"

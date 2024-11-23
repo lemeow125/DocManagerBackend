@@ -66,6 +66,8 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "drf_spectacular_sidecar",
     "accounts",
+    "documents",
+    "django_cleanup.apps.CleanupConfig",
 ]
 
 MIDDLEWARE = [

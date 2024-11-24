@@ -36,12 +36,13 @@ class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
         fields = ["id", "name", "document_type",
-                  "number_pages", "date_uploaded"]
+                  "number_pages", "ocr_metadata", "date_uploaded"]
         read_only_fields = [
             "id",
             "name",
             "document_type",
             "number_pages",
+            "ocr_metadata",
             "date_uploaded",
         ]
 
@@ -59,15 +60,17 @@ class DocumentFileSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "document_type",
-            "file",
             "number_pages",
+            "ocr_metadata",
             "date_uploaded",
+            "file",
         ]
         read_only_fields = [
             "id",
             "name",
             "document_type",
             "number_pages",
+            "ocr_metadata",
             "date_uploaded",
             "file",
         ]

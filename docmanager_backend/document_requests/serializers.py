@@ -59,8 +59,8 @@ class DocumentRequestUnitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DocumentRequestUnit
-        fields = ["document", "copies"]
-        read_only_fields = ["document", "copies"]
+        fields = ["id", "document", "copies"]
+        read_only_fields = ["id", "document", "copies"]
 
 
 class DocumentRequestUnitWithFileSerializer(serializers.ModelSerializer):
@@ -68,8 +68,8 @@ class DocumentRequestUnitWithFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DocumentRequestUnit
-        fields = ["document", "copies"]
-        read_only_fields = ["document", "copies"]
+        fields = ["id", "document", "copies"]
+        read_only_fields = ["id", "document", "copies"]
 
 
 class DocumentRequestSerializer(serializers.ModelSerializer):

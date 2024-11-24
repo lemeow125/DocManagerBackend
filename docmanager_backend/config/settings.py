@@ -92,6 +92,7 @@ INSTALLED_APPS = [
     "accounts",
     "documents",
     "document_requests",
+    "questionnaires",
     "django_cleanup.apps.CleanupConfig",
 ]
 

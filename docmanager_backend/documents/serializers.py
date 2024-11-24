@@ -4,7 +4,6 @@ from .models import Document
 
 class DocumentUploadSerializer(serializers.ModelSerializer):
     # For staff document uploads
-    file = serializers.FileField()
     date_uploaded = serializers.DateTimeField(
         format="%m-%d-%Y %I:%M %p", read_only=True
     )

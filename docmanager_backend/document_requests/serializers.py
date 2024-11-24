@@ -10,6 +10,7 @@ class DocumentRequestUnitCreationSerializer(serializers.ModelSerializer):
     document = serializers.SlugRelatedField(
         many=False, slug_field="id", queryset=Document.objects.all(), required=True
     )
+    copies = serializers.IntegerField(min_value=1)
 
     class Meta:
         model = DocumentRequestUnit
@@ -21,12 +22,13 @@ class DocumentRequestCreationSerializer(serializers.ModelSerializer):
         many=False, slug_field="id", queryset=CustomUser.objects.all(), required=False
     )
     documents = DocumentRequestUnitCreationSerializer(many=True, required=True)
-    college = serializers.CharField(allow_blank=False)
-    purpose = serializers.CharField(max_length=512, allow_blank=False)
+    college = serializers.CharField(max_length=64)
+    purpose = serializers.CharField(max_length=512)
+    type = serializers.ChoiceField(choices=DocumentRequest.TYPE_CHOICES, required=True)
 
     class Meta:
         model = DocumentRequest
-        fields = ["requester", "college", "purpose", "documents"]
+        fields = ["requester", "college", "type", "purpose", "documents"]
 
     def create(self, validated_data):
         user = self.context["request"].user
@@ -71,18 +73,30 @@ class DocumentRequestUnitWithFileSerializer(serializers.ModelSerializer):
 
 class DocumentRequestSerializer(serializers.ModelSerializer):
     documents = serializers.SerializerMethodField()
-    college = serializers.CharField(allow_blank=False)
-    purpose = serializers.CharField(max_length=512, allow_blank=False)
+    purpose = serializers.CharField(max_length=512)
+    date_requested = serializers.DateTimeField(
+        format="%m-%d-%Y %I:%M %p", read_only=True
+    )
 
     class Meta:
         model = DocumentRequest
-        fields = ["id", "requester", "college",
-                  "purpose", "documents", "status"]
+        fields = [
+            "id",
+            "requester",
+            "college",
+            "type",
+            "purpose",
+            "date_requested",
+            "documents",
+            "status",
+        ]
         read_only_fields = [
             "id",
             "requester",
             "college",
+            "type",
             "purpose",
+            "date_requested",
             "documents",
             "status",
         ]
@@ -109,7 +123,7 @@ class DocumentRequestUpdateSerializer(serializers.ModelSerializer):
         if instance.status == "denied":
             raise serializers.ValidationError(
                 {
-                    "error": "Denied requests cannot be updated. It is advised you create a new request and approve it from there"
+                    "error": "Denied requests cannot be updated. You should instead create a new request and approve it from there"
                 }
             )
         elif validated_data["status"] == instance.status:
@@ -120,10 +134,12 @@ class DocumentRequestUpdateSerializer(serializers.ModelSerializer):
         representation = super().update(instance, validated_data)
 
         # Send an email on request status update
-        email = RequestUpdateEmail()
-        email.context = {
-            "request_status": instance.status
-        }
-        email.send(to=[instance.requester.email])
+        try:
+            email = RequestUpdateEmail()
+            email.context = {"request_status": instance.status}
+            email.send(to=[instance.requester.email])
+        except:
+            # Silence out errors if email sending fails
+            pass
 
         return representation

@@ -25,4 +25,9 @@ class DocumentRequest(models.Model):
 
     status = models.CharField(max_length=32, choices=STATUS_CHOICES, default="pending")
 
-    # TODO: Add request type (Softcopy/Hardcopy)
+    TYPE_CHOICES = (
+        ("softcopy", "Softcopy"),
+        ("hardcopy", "Hardcopy"),
+    )
+
+    type = models.CharField(max_length=16, choices=TYPE_CHOICES, default="softcopy")

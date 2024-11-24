@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_extensions",
     "rest_framework",
     "rest_framework_simplejwt",
     "djoser",
@@ -260,3 +261,6 @@ DEFAULT_FROM_EMAIL = EMAIL_ADDRESS
 AUTH_USER_MODEL = "accounts.CustomUser"
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 20480
+
+GRAPH_MODELS = {"app_labels": [
+    "accounts", "documents", "document_requests", "questionnaires"]}

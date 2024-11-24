@@ -264,3 +264,6 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 20480
 
 GRAPH_MODELS = {"app_labels": [
     "accounts", "documents", "document_requests", "questionnaires"]}
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True

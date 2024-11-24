@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: git.06222001.xyz/keannu125/docmanager_backend:dev
+    image: git.06222001.xyz/keannu125/docmanagerbackend:dev
     ports:
       - "${BACKEND_PORT}:8000"
     environment:

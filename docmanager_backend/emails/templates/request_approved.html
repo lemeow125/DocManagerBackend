@@ -9,6 +9,8 @@
 
   {% trans 'Please visit the site to check your request:' %}
   {{ url|safe }}
+
+  {% trans 'For hardcopy requests, please proceed to the USTP office to avail of your requested copies:' %}
 {% endblock %}
 
 {% block html_body %}
@@ -19,7 +21,12 @@
   <p>
     {% trans 'Please visit the site to check your request:' %}
   </p>
+
   <p>
     <a href="{{ url|safe }}"></a>
+  </p>
+
+  <p>
+    {% trans 'For hardcopy requests, please proceed to the USTP office to avail of your requested copies:' %}
   </p>
 {% endblock %}

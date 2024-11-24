@@ -113,6 +113,40 @@ class DocumentRequestSerializer(serializers.ModelSerializer):
         return serializer_class(obj.documents, many=True).data
 
 
+class FullDocumentRequestSerializer(serializers.ModelSerializer):
+    documents = DocumentRequestUnitWithFileSerializer()
+    requester = serializers.SlugRelatedField(
+        many=False, slug_field="email", queryset=CustomUser.objects.all(), required=False
+    )
+    purpose = serializers.CharField(max_length=512)
+    date_requested = serializers.DateTimeField(
+        format="%m-%d-%Y %I:%M %p", read_only=True
+    )
+
+    class Meta:
+        model = DocumentRequest
+        fields = [
+            "id",
+            "requester",
+            "college",
+            "type",
+            "purpose",
+            "date_requested",
+            "documents",
+            "status",
+        ]
+        read_only_fields = [
+            "id",
+            "requester",
+            "college",
+            "type",
+            "purpose",
+            "date_requested",
+            "documents",
+            "status",
+        ]
+
+
 class DocumentRequestUpdateSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(
         choices=DocumentRequest.STATUS_CHOICES, required=True

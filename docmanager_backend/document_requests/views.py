@@ -42,6 +42,19 @@ class DocumentRequestListView(generics.ListAPIView):
         return queryset
 
 
+class DocumentRequestFullListView(generics.ListAPIView):
+    """
+    Returns document requests. Always returns the link to download the document.
+    Head is able to view all document requests here. Staff and clients have no access
+    """
+
+    http_method_names = ["get"]
+    serializer_class = DocumentRequestSerializer
+    pagination_class = PageNumberPagination
+    permission_classes = [IsAuthenticated, IsHead]
+    queryset = DocumentRequest.objects.all()
+
+
 class DocumentRequestUpdateView(generics.UpdateAPIView):
     """
     Used by head approve or deny document requests.

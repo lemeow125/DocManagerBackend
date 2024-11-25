@@ -158,10 +158,10 @@ class DocumentRequestUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "status"]
 
     def update(self, instance, validated_data):
-        if instance.status == "denied":
+        if instance.status == "denied" or instance.status == "approved":
             raise serializers.ValidationError(
                 {
-                    "error": "Denied requests cannot be updated. You should instead create a new request and approve it from there"
+                    "error": "Already approved/denied requests cannot be updated. You should instead create a new request and approve it from there"
                 }
             )
         elif validated_data["status"] == instance.status:

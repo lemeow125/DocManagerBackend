@@ -94,7 +94,7 @@ class PDFWatcher:
 
     def run(self):
         event_handler = PDFHandler()
-        watch_directory = f"{MEDIA_ROOT}/uploads"
+        watch_directory = os.path.join(MEDIA_ROOT, "uploads")
 
         self.observer.schedule(
             event_handler, watch_directory, recursive=True)

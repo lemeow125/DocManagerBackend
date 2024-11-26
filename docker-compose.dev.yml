@@ -10,6 +10,8 @@ services:
     environment:
       - PYTHONBUFFERED=1
     volumes:
+      # File Watcher is broken in Windows Docker since Docker does not notify container about any file changes you make from Windows
+      # If running on Windows, use a shared volume instead of bind mount
       - .:/app
 
   # SMTP Server

@@ -10,7 +10,9 @@ class Document(models.Model):
     DOCUMENT_TYPE_CHOICES = (
         ("memorandum", "Memorandum"),
         ("hoa", "HOA"),
-        # TODO: Update this list on types of documents
+        ("documented procedures manual", "Documented Procedures Manual"),
+        ("other", "Other"),
+
     )
     document_type = models.CharField(
         max_length=32, choices=DOCUMENT_TYPE_CHOICES, null=False, blank=False

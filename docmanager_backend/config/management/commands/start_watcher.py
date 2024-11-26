@@ -110,7 +110,7 @@ class PDFWatcher:
 
 
 class Command(BaseCommand):
-    help = "Pushes data from local database into an existing DNS server"
+    help = "Runs a dedicated file watcher service"
 
     def handle(self, *args, **options):
         watcher = PDFWatcher()

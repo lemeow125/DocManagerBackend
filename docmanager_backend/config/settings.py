@@ -57,6 +57,8 @@ FRONTEND_PORT = get_secret("FRONTEND_PORT")
 # Full URLs
 BACKEND_URL = f"{URL_SCHEME}://{BACKEND_ADDRESS}"
 FRONTEND_URL = f"{URL_SCHEME}://{BACKEND_ADDRESS}"
+# Used for emails
+DOMAIN = f"{FRONTEND_ADDRESS}:{FRONTEND_PORT}/#"
 
 # Append port to full URLs if deployed locally
 if not USE_HTTPS:
@@ -233,7 +235,7 @@ SIMPLE_JWT = {
 DJOSER = {
     "SEND_ACTIVATION_EMAIL": True,
     "SEND_CONFIRMATION_EMAIL": True,
-    "PASSWORD_RESET_CONFIRM_URL": "reset_password_confirm/{uid}/{token}",
+    "PASSWORD_RESET_CONFIRM_URL": "reset_password/confirm/{uid}/{token}",
     "ACTIVATION_URL": "activation/{uid}/{token}",
     "USER_AUTHENTICATION_RULES": ["djoser.authentication.TokenAuthenticationRule"],
     "SERIALIZERS": {

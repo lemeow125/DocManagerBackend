@@ -46,9 +46,9 @@ class CustomUserRegistrationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"password": errors[0]})
             else:
                 raise serializers.ValidationError({"password": errors})
-        if self.Meta.model.objects.filter(username=attrs.get("username")).exists():
+        if self.Meta.model.objects.filter(username=attrs.get("email")).exists():
             raise serializers.ValidationError(
-                "A user with that username already exists."
+                "A user with that email already exists."
             )
         return super().validate(attrs)
 

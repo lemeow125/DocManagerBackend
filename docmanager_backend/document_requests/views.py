@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
-from accounts.permissions import IsHead
+from accounts.permissions import IsHead, IsStaff
 from rest_framework.pagination import PageNumberPagination
 from .serializers import (
     DocumentRequestCreationSerializer,
@@ -45,13 +45,13 @@ class DocumentRequestListView(generics.ListAPIView):
 class DocumentRequestFullListView(generics.ListAPIView):
     """
     Returns document requests. Always returns the link to download the document.
-    Head is able to view all document requests here. Staff and clients have no access
+    Head is able to view all document requests here. Clients have no access, only staff.
     """
 
     http_method_names = ["get"]
     serializer_class = DocumentRequestSerializer
     pagination_class = PageNumberPagination
-    permission_classes = [IsAuthenticated, IsHead]
+    permission_classes = [IsAuthenticated, IsStaff]
     queryset = DocumentRequest.objects.all()
 
 

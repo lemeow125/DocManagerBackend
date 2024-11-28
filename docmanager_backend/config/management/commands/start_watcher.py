@@ -10,6 +10,7 @@ from config.settings import MEDIA_ROOT
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from documents.models import Document
+from django.core.files import File
 import logging
 import time
 
@@ -67,16 +68,19 @@ class PDFHandler(FileSystemEventHandler):
 
                     metadata += text
 
-            document, created = Document.objects.get_or_create(
+            # Open the file for instance creation
+            DOCUMENT, created = Document.objects.get_or_create(
                 name=filename,
                 defaults={
                     'number_pages': num_pages,
                     'ocr_metadata': metadata,
                     'document_type': document_type
-                }
+                },
             )
 
             if created:
+                DOCUMENT.file.save(
+                    name=filename, content=File(open(file_path, 'rb')))
                 self.logger.info(f"Document '{filename}' created successfully with type '{
                     document_type}'.")
 

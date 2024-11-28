@@ -74,7 +74,7 @@ class Questionnaire(models.Model):
 
     # SQD Questions
     SQD_CHOICES = (
-        ("1", "Strongly disagree"),
+        ("1", "Strongly Disagree"),
         ("2", "Disagree"),
         ("3", "Neither Agree nor Disagree"),
         ("4", "Agree"),

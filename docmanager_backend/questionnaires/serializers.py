@@ -18,7 +18,7 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
     region_of_residence = serializers.CharField(max_length=64)
     service_availed = serializers.CharField(max_length=64)
     i_am_a = serializers.ChoiceField(choices=Questionnaire.I_AM_I_CHOICES)
-    i_am_a_type_other = serializers.CharField(required=False)
+    i_am_a_other = serializers.CharField(required=False)
     q1_answer = serializers.ChoiceField(choices=Questionnaire.Q1_CHOICES)
     q2_answer = serializers.ChoiceField(choices=Questionnaire.Q2_CHOICES)
     q3_answer = serializers.ChoiceField(choices=Questionnaire.Q3_CHOICES)
@@ -72,7 +72,7 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
             "region_of_residence",
             "service_availed",
             "i_am_a",
-            "i_am_a_type_other",
+            "i_am_a_other",
             "q1_answer",
             "q2_answer",
             "q3_answer",

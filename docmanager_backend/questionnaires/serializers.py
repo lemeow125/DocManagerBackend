@@ -5,7 +5,7 @@ from .models import Questionnaire
 
 class QuestionnaireSerializer(serializers.ModelSerializer):
     client = serializers.SlugRelatedField(
-        many=False, slug_field="id", queryset=CustomUser.objects.all(), required=False
+        many=False, slug_field="email", queryset=CustomUser.objects.all(), required=False
     )
     client_type = serializers.ChoiceField(
         choices=Questionnaire.CLIENT_TYPE_CHOICES)

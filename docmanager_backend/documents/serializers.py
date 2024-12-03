@@ -2,11 +2,28 @@ from rest_framework import serializers
 from .models import Document
 
 
+class DocumentUpdateSerializer(serializers.ModelSerializer):
+    # For Head to edit document info
+    file = serializers.FileField(required=False)
+
+    class Meta:
+        model = Document
+        fields = [
+            "name",
+            "file",
+            "document_type",
+            "number_pages",
+            "date_uploaded",
+        ]
+        read_only_fields = ["id"]
+
+
 class DocumentUploadSerializer(serializers.ModelSerializer):
     # For staff document uploads
     date_uploaded = serializers.DateTimeField(
         format="%m-%d-%Y %I:%M %p", read_only=True
     )
+    file = serializers.FileField()
 
     class Meta:
         model = Document

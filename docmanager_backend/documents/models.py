@@ -6,20 +6,14 @@ import uuid
 class Document(models.Model):
     name = models.CharField(max_length=100)
 
-    DOCUMENT_TYPE_CHOICES = (
-        ("memorandum", "Memorandum"),
-        ("hoa", "HOA"),
-        ("documented procedures manual", "Documented Procedures Manual"),
-        ("other", "Other"),
-    )
     document_type = models.CharField(
-        max_length=32, choices=DOCUMENT_TYPE_CHOICES, null=False, blank=False
+        max_length=32, null=False, blank=False
     )
     number_pages = models.IntegerField(null=False, blank=False)
     ocr_metadata = models.TextField(null=True, blank=True)
 
     def upload_to(instance, filename):
-        _, extension = filename.split(".")
+        _, extension = filename.rsplit(".", 1)
         return "documents/%s_%s.%s" % (now(), str(uuid.uuid4()), extension)
 
     file = models.FileField(upload_to=upload_to)

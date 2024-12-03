@@ -37,6 +37,7 @@ class PDFHandler(FileSystemEventHandler):
     def process_pdf(self, file_path):
         try:
             filename = os.path.basename(file_path)
+            filename = str(filename).replace(" ", "")
             metadata = ""
             document_type = ""
 
@@ -65,10 +66,7 @@ class PDFHandler(FileSystemEventHandler):
                         if line.strip():
                             document_type = line.strip().lower()
                             break
-                    if (
-                        not document_type
-                        or document_type not in Document.DOCUMENT_TYPE_CHOICES
-                    ):
+                    if not document_type:
                         document_type = "other"
 
                     metadata += text
@@ -84,9 +82,11 @@ class PDFHandler(FileSystemEventHandler):
             )
 
             if created:
-                DOCUMENT.file.save(name=filename, content=File(open(file_path, "rb")))
+                DOCUMENT.file.save(
+                    name=filename, content=File(open(file_path, "rb")))
                 self.logger.info(
-                    f"Document '{filename}' created successfully with type '{document_type}'."
+                    f"Document '{filename}' created successfully with type '{
+                        document_type}'."
                 )
 
             else:

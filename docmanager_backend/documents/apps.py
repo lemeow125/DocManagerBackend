@@ -7,4 +7,5 @@ class DocumentsConfig(AppConfig):
 
     def ready(self) -> None:
         import documents.signals
+
         return super().ready()

@@ -3,7 +3,7 @@ from .serializers import QuestionnaireSerializer
 from rest_framework.permissions import IsAuthenticated
 from .models import Questionnaire
 from rest_framework.pagination import PageNumberPagination
-from accounts.permissions import IsStaff
+from accounts.permissions import IsStaff, IsPlanning
 
 
 class QuestionnaireListAPIView(generics.ListAPIView):
@@ -15,7 +15,7 @@ class QuestionnaireListAPIView(generics.ListAPIView):
     serializer_class = QuestionnaireSerializer
     queryset = Questionnaire.objects.all()
     pagination_class = PageNumberPagination
-    permission_classes = [IsAuthenticated, IsStaff]
+    permission_classes = [IsAuthenticated, IsPlanning]
 
 
 class QuestionnaireSubmitView(generics.CreateAPIView):

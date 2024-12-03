@@ -35,8 +35,14 @@ class DocumentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Document
-        fields = ["id", "name", "document_type",
-                  "number_pages", "ocr_metadata", "date_uploaded"]
+        fields = [
+            "id",
+            "name",
+            "document_type",
+            "number_pages",
+            "ocr_metadata",
+            "date_uploaded",
+        ]
         read_only_fields = [
             "id",
             "name",

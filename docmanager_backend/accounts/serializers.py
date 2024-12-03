@@ -6,6 +6,8 @@ from rest_framework.settings import api_settings
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
+    birthday = serializers.DateField(format="%m-%d-%Y")
+
     class Meta:
         model = CustomUser
         fields = [
@@ -16,8 +18,22 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "last_name",
             "full_name",
             "role",
+            "birthday",
+            "age",
+            "sex",
+            "date_joined",
         ]
-        read_only_fields = ["id", "username", "email", "full_name", "role"]
+        read_only_fields = [
+            "id",
+            "username",
+            "email",
+            "full_name",
+            "role",
+            "birthday",
+            "age",
+            "sex",
+            "date_joined",
+        ]
 
 
 class CustomUserRegistrationSerializer(serializers.ModelSerializer):
@@ -27,10 +43,12 @@ class CustomUserRegistrationSerializer(serializers.ModelSerializer):
     )
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
+    birthday = serializers.DateField(format="%Y-%m-%d", required=True)
 
     class Meta:
         model = CustomUser
-        fields = ["email", "password", "first_name", "last_name"]
+        fields = ["email", "password", "first_name",
+                  "last_name", "sex", "birthday"]
 
     def validate(self, attrs):
         user_attrs = attrs.copy()
@@ -48,8 +66,7 @@ class CustomUserRegistrationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"password": errors})
         if self.Meta.model.objects.filter(username=attrs.get("email")).exists():
             raise serializers.ValidationError(
-                "A user with that email already exists."
-            )
+                "A user with that email already exists.")
         return super().validate(attrs)
 
     def create(self, validated_data):

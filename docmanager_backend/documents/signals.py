@@ -1,4 +1,3 @@
-
 from io import BytesIO
 from documents.models import Document
 from django.db.models.signals import post_save

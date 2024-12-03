@@ -24,8 +24,7 @@ class DocumentRequestCreationSerializer(serializers.ModelSerializer):
     documents = DocumentRequestUnitCreationSerializer(many=True, required=True)
     college = serializers.CharField(max_length=64)
     purpose = serializers.CharField(max_length=512)
-    type = serializers.ChoiceField(
-        choices=DocumentRequest.TYPE_CHOICES, required=True)
+    type = serializers.ChoiceField(choices=DocumentRequest.TYPE_CHOICES, required=True)
 
     class Meta:
         model = DocumentRequest
@@ -75,7 +74,10 @@ class DocumentRequestUnitWithFileSerializer(serializers.ModelSerializer):
 class DocumentRequestSerializer(serializers.ModelSerializer):
     documents = serializers.SerializerMethodField()
     requester = serializers.SlugRelatedField(
-        many=False, slug_field="email", queryset=CustomUser.objects.all(), required=False
+        many=False,
+        slug_field="email",
+        queryset=CustomUser.objects.all(),
+        required=False,
     )
     purpose = serializers.CharField(max_length=512)
     date_requested = serializers.DateTimeField(
@@ -116,7 +118,10 @@ class DocumentRequestSerializer(serializers.ModelSerializer):
 class FullDocumentRequestSerializer(serializers.ModelSerializer):
     documents = DocumentRequestUnitWithFileSerializer()
     requester = serializers.SlugRelatedField(
-        many=False, slug_field="email", queryset=CustomUser.objects.all(), required=False
+        many=False,
+        slug_field="email",
+        queryset=CustomUser.objects.all(),
+        required=False,
     )
     purpose = serializers.CharField(max_length=512)
     date_requested = serializers.DateTimeField(

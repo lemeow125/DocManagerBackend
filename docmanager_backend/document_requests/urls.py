@@ -3,7 +3,7 @@ from .views import (
     DocumentRequestCreateView,
     DocumentRequestListView,
     DocumentRequestUpdateView,
-    DocumentRequestFullListView
+    DocumentRequestFullListView,
 )
 
 urlpatterns = [

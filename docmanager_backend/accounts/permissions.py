@@ -12,6 +12,15 @@ class IsStaff(BasePermission):
         )
 
 
+class IsPlanning(BasePermission):
+    """
+    Allows access only to users with head, admin planning role
+    """
+
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.role in ("head", "admin", "planning"))
+
+
 class IsHead(BasePermission):
     """
     Allows access only to users with staff role

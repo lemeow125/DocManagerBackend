@@ -17,9 +17,11 @@ import time
 
 class PDFHandler(FileSystemEventHandler):
     def __init__(self):
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s - %(message)s',
-                            datefmt='%Y-%m-%d %H:%M:%S')
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
 
         self.logger = logging.getLogger(__name__)
         self.logger.info("Starting Document Watcher...")
@@ -28,7 +30,7 @@ class PDFHandler(FileSystemEventHandler):
         if event.is_directory:
             return None
 
-        if event.src_path.endswith('.pdf'):
+        if event.src_path.endswith(".pdf"):
             self.logger.info(f"New PDF file detected: {event.src_path}")
             self.process_pdf(event.src_path)
 
@@ -57,13 +59,16 @@ class PDFHandler(FileSystemEventHandler):
                     # Perform OCR
                     text = pytesseract.image_to_string(img).strip()
 
-                    lines = text.split('\n')
+                    lines = text.split("\n")
 
                     for line in lines:
                         if line.strip():
                             document_type = line.strip().lower()
                             break
-                    if not document_type or document_type not in Document.DOCUMENT_TYPE_CHOICES:
+                    if (
+                        not document_type
+                        or document_type not in Document.DOCUMENT_TYPE_CHOICES
+                    ):
                         document_type = "other"
 
                     metadata += text
@@ -72,17 +77,17 @@ class PDFHandler(FileSystemEventHandler):
             DOCUMENT, created = Document.objects.get_or_create(
                 name=filename,
                 defaults={
-                    'number_pages': num_pages,
-                    'ocr_metadata': metadata,
-                    'document_type': document_type
+                    "number_pages": num_pages,
+                    "ocr_metadata": metadata,
+                    "document_type": document_type,
                 },
             )
 
             if created:
-                DOCUMENT.file.save(
-                    name=filename, content=File(open(file_path, 'rb')))
-                self.logger.info(f"Document '{filename}' created successfully with type '{
-                    document_type}'.")
+                DOCUMENT.file.save(name=filename, content=File(open(file_path, "rb")))
+                self.logger.info(
+                    f"Document '{filename}' created successfully with type '{document_type}'."
+                )
 
             else:
                 self.logger.info(f"Document '{filename}' already exists.")
@@ -100,8 +105,7 @@ class PDFWatcher:
         event_handler = PDFHandler()
         watch_directory = os.path.join(MEDIA_ROOT, "uploads")
 
-        self.observer.schedule(
-            event_handler, watch_directory, recursive=True)
+        self.observer.schedule(event_handler, watch_directory, recursive=True)
         self.observer.start()
 
         try:

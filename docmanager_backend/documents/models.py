@@ -1,4 +1,3 @@
-
 from django.db import models
 from django.utils.timezone import now
 import uuid
@@ -12,7 +11,6 @@ class Document(models.Model):
         ("hoa", "HOA"),
         ("documented procedures manual", "Documented Procedures Manual"),
         ("other", "Other"),
-
     )
     document_type = models.CharField(
         max_length=32, choices=DOCUMENT_TYPE_CHOICES, null=False, blank=False

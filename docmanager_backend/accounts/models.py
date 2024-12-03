@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.utils.timezone import now
+from django.utils.timezone import now, localdate
 
 
 class CustomUser(AbstractUser):
@@ -22,9 +22,32 @@ class CustomUser(AbstractUser):
         ("staff", "Staff"),
     )
 
-    role = models.CharField(max_length=32, choices=ROLE_CHOICES, default="client")
+    role = models.CharField(
+        max_length=32, choices=ROLE_CHOICES, default="client")
 
     date_joined = models.DateTimeField(default=now, editable=False)
+
+    SEX_CHOICES = (
+        ("male", "Male"),
+        ("female", "Female"),
+    )
+
+    sex = models.CharField(
+        max_length=32, choices=SEX_CHOICES, blank=False, null=False)
+    birthday = models.DateField(blank=False, null=False)
+
+    @property
+    def age(self):
+        date_now = localdate(now())
+        age = (
+            date_now.year
+            - self.birthday.year
+            - (
+                (date_now.month, date_now.day)
+                < (self.birthday.month, self.birthday.day)
+            )
+        )
+        return age
 
     @property
     def full_name(self):

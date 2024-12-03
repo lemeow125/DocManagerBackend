@@ -10,7 +10,8 @@ class CustomUserAdmin(UserAdmin):
     readonly_fields = ("date_joined",)
 
     # Add this line to include the role field in the admin form
-    fieldsets = UserAdmin.fieldsets + ((None, {"fields": ("role",)}),)
+    fieldsets = UserAdmin.fieldsets + \
+        ((None, {"fields": ("role", "sex", "birthday")}),)
 
 
 admin.site.register(CustomUser, CustomUserAdmin)

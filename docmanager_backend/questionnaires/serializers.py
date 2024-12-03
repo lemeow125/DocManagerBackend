@@ -5,16 +5,18 @@ from .models import Questionnaire
 
 class QuestionnaireSerializer(serializers.ModelSerializer):
     client = serializers.SlugRelatedField(
-        many=False, slug_field="email", queryset=CustomUser.objects.all(), required=False
+        many=False,
+        slug_field="email",
+        queryset=CustomUser.objects.all(),
+        required=False,
     )
-    client_type = serializers.ChoiceField(
-        choices=Questionnaire.CLIENT_TYPE_CHOICES)
+    client_type = serializers.ChoiceField(choices=Questionnaire.CLIENT_TYPE_CHOICES)
 
     date_submitted = serializers.DateTimeField(
         format="%m-%d-%Y %I:%M %p", read_only=True
     )
-    sex = serializers.ChoiceField(choices=Questionnaire.SEX_CHOICES)
-    age = serializers.IntegerField(min_value=1)
+    age = serializers.SerializerMethodField()
+    sex = serializers.SerializerMethodField()
     region_of_residence = serializers.CharField(max_length=64)
     service_availed = serializers.CharField(max_length=64)
     i_am_a = serializers.ChoiceField(choices=Questionnaire.I_AM_I_CHOICES)
@@ -31,6 +33,12 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
     sqd7_answer = serializers.ChoiceField(choices=Questionnaire.SQD_CHOICES)
     sqd8_answer = serializers.ChoiceField(choices=Questionnaire.SQD_CHOICES)
     extra_suggestions = serializers.CharField(max_length=512, required=False)
+
+    def get_age(self, obj):
+        return obj.client.age
+
+    def get_sex(self, obj):
+        return obj.client.sex
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

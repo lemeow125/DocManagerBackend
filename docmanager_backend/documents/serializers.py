@@ -3,19 +3,14 @@ from .models import Document
 
 
 class DocumentUpdateSerializer(serializers.ModelSerializer):
-    # For Head to edit document info
-    file = serializers.FileField(required=False)
 
     class Meta:
         model = Document
         fields = [
             "name",
-            "file",
             "document_type",
             "number_pages",
-            "date_uploaded",
         ]
-        read_only_fields = ["id"]
 
 
 class DocumentUploadSerializer(serializers.ModelSerializer):

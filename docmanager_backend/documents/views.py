@@ -4,11 +4,23 @@ from .serializers import (
     DocumentFileSerializer,
     DocumentUploadSerializer,
     DocumentDeleteSerializer,
+    DocumentUpdateSerializer
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
-from accounts.permissions import IsStaff
+from accounts.permissions import IsStaff, IsHead
 from .models import Document
+
+
+class DocumentUpdateView(generics.UpdateAPIView):
+    """
+    Used by staff to upload documents.
+    """
+
+    http_method_names = ["patch"]
+    serializer_class = DocumentUpdateSerializer
+    queryset = Document.objects.all()
+    permission_classes = [IsAuthenticated, IsHead]
 
 
 class DocumentUploadView(generics.CreateAPIView):

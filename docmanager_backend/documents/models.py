@@ -7,7 +7,7 @@ class Document(models.Model):
     name = models.CharField(max_length=100)
 
     document_type = models.CharField(
-        max_length=32, null=False, blank=False
+        max_length=128, null=False, blank=False
     )
     number_pages = models.IntegerField(null=False, blank=False)
     ocr_metadata = models.TextField(null=True, blank=True)

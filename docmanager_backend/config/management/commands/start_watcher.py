@@ -1,7 +1,7 @@
 from ollama import ChatResponse
 import base64
 import httpx
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from io import BytesIO
 from documents.models import Document
@@ -89,7 +89,7 @@ class PDFHandler(FileSystemEventHandler):
                         client = Client(
                             host=get_secret("OLLAMA_URL"),
                             auth=httpx.BasicAuth(
-                                username=get_secret("OLLAMA_USERNAME"), password=get_secret("OLLAMA_PASSWORD"))
+                                username=get_secret("OLLAMA_USERNAME"), password=get_secret("OLLAMA_PASSWORD")) if get_secret("OLLAMA_USE_AUTH") else None
                         )
 
                         encoded_image = base64.b64encode(
@@ -111,15 +111,15 @@ class PDFHandler(FileSystemEventHandler):
                             """
 
                             response: ChatResponse = client.chat(
-                                model="llama3.2-vision",
+                                model=get_secret("OLLAMA_MODEL"),
                                 messages=[
                                     {"role": "user", "content": content,
                                         "images": [encoded_image]},
                                 ],
                             )
 
-                            document_type = response["message"]["content"].split(":")[
-                                0].replace("*", "").replace(".", "")
+                            document_type = response["message"]["content"].replace(
+                                "*", "").replace(".", "")
 
                             # A few safety checks if the model does not follow through with output instructions
                             if len(document_type) > 16:

@@ -8,4 +8,4 @@ from .models import Document
 class DocumentAdmin(ModelAdmin):
     model = Document
     search_fields = ["id", "name", "document_type"]
-    list_display = ["id", "name", "document_type"]
+    list_display = ["id", "name", "document_type", "date_uploaded"]

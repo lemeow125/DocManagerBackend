@@ -51,7 +51,7 @@ class DocumentListView(generics.ListAPIView):
 
     http_method_names = ["get"]
     serializer_class = DocumentSerializer
-    queryset = Document.objects.all()
+    queryset = Document.objects.all().order_by("-date_uploaded")
     pagination_class = PageNumberPagination
     permission_classes = [IsAuthenticated]
 

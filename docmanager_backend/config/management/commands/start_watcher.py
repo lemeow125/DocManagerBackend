@@ -124,7 +124,7 @@ class PDFHandler(FileSystemEventHandler):
                             # A few safety checks if the model does not follow through with output instructions
                             if len(document_type) > 16:
                                 self.logger.warning(
-                                    f"Ollama API gave incorrect document category: {response["message"]["content"]}. Retrying...")
+                                    f"Ollama API gave incorrect document category: {response['message']['content']}. Retrying...")
                             break
 
                     # If that fails, just use regular OCR read the title as a dirty fix/fallback
@@ -146,7 +146,7 @@ class PDFHandler(FileSystemEventHandler):
 
             # Open the file for instance creation
             DOCUMENT, created = Document.objects.get_or_create(
-                name=filename,
+                name=filename.replace(".pdf", ""),
                 defaults={
                     "number_pages": num_pages,
                     "ocr_metadata": metadata,
@@ -158,8 +158,7 @@ class PDFHandler(FileSystemEventHandler):
                 DOCUMENT.file.save(
                     name=filename, content=File(open(file_path, "rb")))
                 self.logger.info(
-                    f"Document '{filename}' created successfully with type '{
-                        document_type}'."
+                    f"Document '{filename}' created successfully with type '{document_type}'."
                 )
 
             else:

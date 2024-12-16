@@ -6,7 +6,7 @@ from rest_framework.settings import api_settings
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    birthday = serializers.DateField(format="%m-%d-%Y")
+    birthday = serializers.DateField(format="%Y-%m-%d")
 
     class Meta:
         model = CustomUser

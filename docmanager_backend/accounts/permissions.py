@@ -8,7 +8,8 @@ class IsStaff(BasePermission):
 
     def has_permission(self, request, view):
         return bool(
-            request.user and request.user.role in ("head", "admin", "planning", "staff")
+            request.user and request.user.role in (
+                "head", "admin", "planning", "staff")
         )
 
 
@@ -18,7 +19,7 @@ class IsPlanning(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return bool(request.user and request.user.role in ("head", "admin", "planning"))
+        return bool(request.user and request.user.role == "planning")
 
 
 class IsHead(BasePermission):

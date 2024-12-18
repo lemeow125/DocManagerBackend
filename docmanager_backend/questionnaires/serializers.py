@@ -1,16 +1,25 @@
 from rest_framework import serializers
 from accounts.models import CustomUser
+from document_requests.models import DocumentRequest
 from .models import Questionnaire
 
 
 class QuestionnaireSerializer(serializers.ModelSerializer):
+    document_request = serializers.SlugRelatedField(
+        many=False,
+        slug_field="id",
+        queryset=DocumentRequest.objects.all(),
+        required=True,
+        allow_null=True,
+    )
     client = serializers.SlugRelatedField(
         many=False,
         slug_field="email",
         queryset=CustomUser.objects.all(),
         required=False,
     )
-    client_type = serializers.ChoiceField(choices=Questionnaire.CLIENT_TYPE_CHOICES)
+    client_type = serializers.ChoiceField(
+        choices=Questionnaire.CLIENT_TYPE_CHOICES)
 
     date_submitted = serializers.DateTimeField(
         format="%m-%d-%Y %I:%M %p", read_only=True
@@ -20,7 +29,7 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
     region_of_residence = serializers.CharField(max_length=64)
     service_availed = serializers.CharField(max_length=64)
     i_am_a = serializers.ChoiceField(choices=Questionnaire.I_AM_I_CHOICES)
-    i_am_a_other = serializers.CharField(required=False)
+    i_am_a_other = serializers.CharField(required=False, allow_blank=True)
     q1_answer = serializers.ChoiceField(choices=Questionnaire.Q1_CHOICES)
     q2_answer = serializers.ChoiceField(choices=Questionnaire.Q2_CHOICES)
     q3_answer = serializers.ChoiceField(choices=Questionnaire.Q3_CHOICES)
@@ -32,7 +41,8 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
     sqd6_answer = serializers.ChoiceField(choices=Questionnaire.SQD_CHOICES)
     sqd7_answer = serializers.ChoiceField(choices=Questionnaire.SQD_CHOICES)
     sqd8_answer = serializers.ChoiceField(choices=Questionnaire.SQD_CHOICES)
-    extra_suggestions = serializers.CharField(max_length=512, required=False)
+    extra_suggestions = serializers.CharField(
+        max_length=512, required=False, allow_blank=True)
 
     def get_age(self, obj):
         return obj.client.age
@@ -58,20 +68,32 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
                 {"error": "Missing description for client type: Other"}
             )
 
-        # Create the instance without calling super().create()
+        if "document_request" in validated_data:
+            document_request_id = validated_data["document_request"].id
+            del validated_data["document_request"]
+
         instance = self.Meta.model(**validated_data)
 
         # Explicitly set the client_type attribute
         instance.client_type = validated_data.get("client_type")
-
         # Save the instance
         instance.save()
+
+        # Update associated document request if it exists
+        if document_request_id:
+            DOCUMENT_REQUEST = DocumentRequest.objects.get(
+                id=document_request_id
+            )
+            DOCUMENT_REQUEST.questionnaire = instance
+            DOCUMENT_REQUEST.save()
+
         return instance
 
     class Meta:
         model = Questionnaire
         fields = [
             "id",
+            "document_request",
             "client",
             "client_type",
             "date_submitted",

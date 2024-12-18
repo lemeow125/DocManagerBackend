@@ -17,7 +17,8 @@ class Questionnaire(models.Model):
 
     date_submitted = models.DateTimeField(default=now, editable=False)
 
-    region_of_residence = models.CharField(max_length=64, null=False, blank=False)
+    region_of_residence = models.CharField(
+        max_length=64, null=False, blank=False)
     service_availed = models.CharField(max_length=64, null=False, blank=False)
     I_AM_I_CHOICES = (
         ("faculty", "Faculty"),

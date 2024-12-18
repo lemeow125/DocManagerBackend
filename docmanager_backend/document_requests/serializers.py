@@ -75,11 +75,15 @@ class DocumentRequestUnitWithFileSerializer(serializers.ModelSerializer):
 
 class DocumentRequestSerializer(serializers.ModelSerializer):
     documents = serializers.SerializerMethodField()
+    questionnaire = serializers.SlugRelatedField(
+        many=False,
+        slug_field="id",
+        queryset=Questionnaire.objects.all(),
+    )
     requester = serializers.SlugRelatedField(
         many=False,
         slug_field="email",
         queryset=CustomUser.objects.all(),
-        required=False,
     )
     purpose = serializers.CharField(max_length=512)
     date_requested = serializers.DateTimeField(
@@ -90,6 +94,7 @@ class DocumentRequestSerializer(serializers.ModelSerializer):
         model = DocumentRequest
         fields = [
             "id",
+            "questionnaire",
             "requester",
             "college",
             "type",
@@ -100,6 +105,7 @@ class DocumentRequestSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
+            "questionnaire",
             "requester",
             "college",
             "type",

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from documents.models import Document
 from documents.serializers import DocumentSerializer, DocumentFileSerializer
+from questionnaires.models import Questionnaire
 from accounts.models import CustomUser
 from emails.templates import RequestUpdateEmail
 from .models import DocumentRequest, DocumentRequestUnit
@@ -24,7 +25,8 @@ class DocumentRequestCreationSerializer(serializers.ModelSerializer):
     documents = DocumentRequestUnitCreationSerializer(many=True, required=True)
     college = serializers.CharField(max_length=64)
     purpose = serializers.CharField(max_length=512)
-    type = serializers.ChoiceField(choices=DocumentRequest.TYPE_CHOICES, required=True)
+    type = serializers.ChoiceField(
+        choices=DocumentRequest.TYPE_CHOICES, required=True)
 
     class Meta:
         model = DocumentRequest
@@ -79,6 +81,12 @@ class DocumentRequestSerializer(serializers.ModelSerializer):
         queryset=CustomUser.objects.all(),
         required=False,
     )
+    requester = serializers.SlugRelatedField(
+        many=False,
+        slug_field="id",
+        queryset=CustomUser.objects.all(),
+        required=False,
+    )
     purpose = serializers.CharField(max_length=512)
     date_requested = serializers.DateTimeField(
         format="%m-%d-%Y %I:%M %p", read_only=True
@@ -108,10 +116,10 @@ class DocumentRequestSerializer(serializers.ModelSerializer):
         ]
 
     def get_documents(self, obj):
-        if obj.status != "approved":
-            serializer_class = DocumentRequestUnitSerializer
-        else:
+        if obj.questionnaire and obj.status == "approved":
             serializer_class = DocumentRequestUnitWithFileSerializer
+        else:
+            serializer_class = DocumentRequestUnitSerializer
         return serializer_class(obj.documents, many=True).data
 
 

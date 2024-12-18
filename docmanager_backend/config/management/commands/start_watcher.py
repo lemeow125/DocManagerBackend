@@ -1,4 +1,3 @@
-from ollama import ChatResponse
 import base64
 import httpx
 from django.core.management.base import BaseCommand
@@ -18,6 +17,9 @@ from django.core.files import File
 import logging
 import time
 from ollama import Client
+from pydantic import BaseModel
+from typing import Optional
+import json
 
 
 class PDFHandler(FileSystemEventHandler):
@@ -83,55 +85,52 @@ class PDFHandler(FileSystemEventHandler):
                     # Perform OCR
                     text = pytesseract.image_to_string(img).strip()
 
-                    # Get document category
                     # Try to pass image to the Ollama image recognition API first
                     try:
+                        class DocumentCategory(BaseModel):
+                            category: str = "other"
+                            explanation: Optional[str] = None
+
                         client = Client(
                             host=get_secret("OLLAMA_URL"),
                             auth=httpx.BasicAuth(
-                                username=get_secret("OLLAMA_USERNAME"), password=get_secret("OLLAMA_PASSWORD")) if get_secret("OLLAMA_USE_AUTH") else None
+                                username=get_secret("OLLAMA_USERNAME"), password=get_secret("OLLAMA_PASSWORD")) if get_secret("OLLAMA_USE_AUTH") else None,
                         )
 
                         encoded_image = base64.b64encode(
                             img_buffer.getvalue()).decode()
 
-                        attempts = 0
-                        while True:
-                            if attempts >= 3:
-                                raise Exception(
-                                    "Unable to categorize using Ollama API")
-                            attempts += 1
+                        possible_categories = set((Document.objects.all().values_list(
+                            "document_type", flat=True), "Documented Procedures Manual", "Form", "Special Order"))
+                        prompt = f"""
+                            Read the text from the image and provide a category. Return as JSON.
 
-                            content = f"""
-                            Read the text from the image and provide a category.
-
-                            Possible categories are: Announcement, Manual, Form
-
-                            Respond only with the category. No explanations are necessary.
+                            Possible categories are: {possible_categories}
                             """
+                        response = client.chat(
+                            model=get_secret("OLLAMA_MODEL"),
+                            messages=[
+                                {"role": "user",
+                                 "content": prompt,
+                                 "images": [encoded_image]},
+                            ],
+                            format=DocumentCategory.model_json_schema(),
+                            options={
+                                "temperature": 0
+                            },
 
-                            response: ChatResponse = client.chat(
-                                model=get_secret("OLLAMA_MODEL"),
-                                messages=[
-                                    {"role": "user", "content": content,
-                                        "images": [encoded_image]},
-                                ],
-                            )
+                        )
 
-                            document_type = response["message"]["content"].replace(
-                                "*", "").replace(".", "")
-
-                            # A few safety checks if the model does not follow through with output instructions
-                            if len(document_type) > 16:
-                                self.logger.warning(
-                                    f"Ollama API gave incorrect document category: {response['message']['content']}. Retrying...")
-                            break
+                        DocumentCategory.model_validate_json(
+                            response.message.content)
+                        result = json.loads(response.message.content)
+                        document_type = result.get("category")
 
                     # If that fails, just use regular OCR read the title as a dirty fix/fallback
                     except Exception as e:
                         self.logger.warning(f"Error! {e}")
                         self.logger.warning(
-                            "Ollama OCR offloading failed. Falling back to default OCR")
+                            "Ollama OCR offload failed. Falling back to default OCR")
                         lines = text.split("\n")
 
                         for line in lines:
@@ -158,7 +157,8 @@ class PDFHandler(FileSystemEventHandler):
                 DOCUMENT.file.save(
                     name=filename, content=File(open(file_path, "rb")))
                 self.logger.info(
-                    f"Document '{filename}' created successfully with type '{document_type}'."
+                    f"Document '{filename}' created successfully with type '{
+                        document_type}'."
                 )
 
             else:

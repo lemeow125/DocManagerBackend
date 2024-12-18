@@ -105,7 +105,7 @@ class PDFHandler(FileSystemEventHandler):
                         prompt = f"""
                             Read the text from the image and provide a category. Return as JSON.
 
-                            Possible categories are: {possible_categories}
+                            Possible categories are: {possible_categories}. You are free to create a new one if none are suitable.
                             """
                         response = client.chat(
                             model=get_secret("OLLAMA_MODEL"),

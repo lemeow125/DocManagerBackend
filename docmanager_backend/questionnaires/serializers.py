@@ -69,7 +69,10 @@ class QuestionnaireSerializer(serializers.ModelSerializer):
             )
 
         if "document_request" in validated_data:
-            document_request_id = validated_data["document_request"].id
+            if validated_data["document_request"]:
+                document_request_id = validated_data["document_request"].id
+            else:
+                document_request_id = None
             del validated_data["document_request"]
 
         instance = self.Meta.model(**validated_data)

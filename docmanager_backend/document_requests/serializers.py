@@ -81,12 +81,6 @@ class DocumentRequestSerializer(serializers.ModelSerializer):
         queryset=CustomUser.objects.all(),
         required=False,
     )
-    requester = serializers.SlugRelatedField(
-        many=False,
-        slug_field="id",
-        queryset=CustomUser.objects.all(),
-        required=False,
-    )
     purpose = serializers.CharField(max_length=512)
     date_requested = serializers.DateTimeField(
         format="%m-%d-%Y %I:%M %p", read_only=True

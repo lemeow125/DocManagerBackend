@@ -124,7 +124,7 @@ class DocumentRequestSerializer(serializers.ModelSerializer):
 
 
 class FullDocumentRequestSerializer(serializers.ModelSerializer):
-    documents = DocumentRequestUnitWithFileSerializer()
+    documents = DocumentRequestUnitWithFileSerializer(many=True)
     requester = serializers.SlugRelatedField(
         many=False,
         slug_field="full_name",

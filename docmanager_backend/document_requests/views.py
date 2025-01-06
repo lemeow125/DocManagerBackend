@@ -7,6 +7,7 @@ from .serializers import (
     DocumentRequestCreationSerializer,
     DocumentRequestSerializer,
     DocumentRequestUpdateSerializer,
+    FullDocumentRequestSerializer
 )
 
 from .models import DocumentRequest
@@ -49,7 +50,7 @@ class DocumentRequestFullListView(generics.ListAPIView):
     """
 
     http_method_names = ["get"]
-    serializer_class = DocumentRequestSerializer
+    serializer_class = FullDocumentRequestSerializer
     pagination_class = PageNumberPagination
     permission_classes = [IsAuthenticated, IsStaff]
     queryset = DocumentRequest.objects.all()

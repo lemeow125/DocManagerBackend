@@ -82,7 +82,7 @@ class DocumentRequestSerializer(serializers.ModelSerializer):
     )
     requester = serializers.SlugRelatedField(
         many=False,
-        slug_field="email",
+        slug_field="full_name",
         queryset=CustomUser.objects.all(),
     )
     purpose = serializers.CharField(max_length=512)
@@ -127,7 +127,7 @@ class FullDocumentRequestSerializer(serializers.ModelSerializer):
     documents = DocumentRequestUnitWithFileSerializer()
     requester = serializers.SlugRelatedField(
         many=False,
-        slug_field="email",
+        slug_field="full_name",
         queryset=CustomUser.objects.all(),
         required=False,
     )

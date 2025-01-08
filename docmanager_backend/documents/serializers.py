@@ -53,6 +53,7 @@ class DocumentSerializer(serializers.ModelSerializer):
             "document_type",
             "number_pages",
             "ocr_metadata",
+            "sent_from",
             "date_uploaded",
         ]
         read_only_fields = [
@@ -61,6 +62,7 @@ class DocumentSerializer(serializers.ModelSerializer):
             "document_type",
             "number_pages",
             "ocr_metadata",
+            "sent_from",
             "date_uploaded",
         ]
 
@@ -81,6 +83,7 @@ class DocumentFileSerializer(serializers.ModelSerializer):
             "number_pages",
             "ocr_metadata",
             "date_uploaded",
+            "sent_from",
             "file",
         ]
         read_only_fields = [
@@ -90,5 +93,6 @@ class DocumentFileSerializer(serializers.ModelSerializer):
             "number_pages",
             "ocr_metadata",
             "date_uploaded",
+            "sent_from",
             "file",
         ]

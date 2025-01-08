@@ -101,6 +101,7 @@ class DocumentRequestSerializer(serializers.ModelSerializer):
             "purpose",
             "date_requested",
             "documents",
+            "remarks",
             "status",
         ]
         read_only_fields = [
@@ -112,6 +113,7 @@ class DocumentRequestSerializer(serializers.ModelSerializer):
             "purpose",
             "date_requested",
             "documents",
+            "remarks,"
             "status",
         ]
 
@@ -146,6 +148,7 @@ class FullDocumentRequestSerializer(serializers.ModelSerializer):
             "purpose",
             "date_requested",
             "documents",
+            "remarks",
             "status",
         ]
         read_only_fields = [
@@ -167,27 +170,41 @@ class DocumentRequestUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DocumentRequest
-        fields = ["id", "status"]
-        read_only_fields = ["id", "status"]
+        fields = ["id", "status", "remarks"]
+        read_only_fields = ["id"]
 
     def update(self, instance, validated_data):
+        print(validated_data)
         if instance.status == "denied" or instance.status == "approved":
             raise serializers.ValidationError(
                 {
                     "error": "Already approved/denied requests cannot be updated. You should instead create a new request and approve it from there"
                 }
             )
+        elif "status" not in validated_data:
+            raise serializers.ValidationError(
+                {
+                    "error": "No status value update provided"
+                }
+            )
         elif validated_data["status"] == instance.status:
             raise serializers.ValidationError(
                 {"error": "Request form status provided is the same as current status"}
             )
-
+        elif validated_data["status"] == "denied" and "remarks" not in validated_data:
+            raise serializers.ValidationError(
+                {"error": "Request denial requires remarks"}
+            )
         representation = super().update(instance, validated_data)
 
         # Send an email on request status update
         try:
             email = RequestUpdateEmail()
             email.context = {"request_status": instance.status}
+            if instance.status == "denied":
+                email.context = {"remarks": instance.remarks}
+            else:
+                email.context = {"remarks": "N/A"}
             email.send(to=[instance.requester.email])
         except:
             # Silence out errors if email sending fails

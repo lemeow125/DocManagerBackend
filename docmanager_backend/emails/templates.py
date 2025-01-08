@@ -8,6 +8,7 @@ class RequestUpdateEmail(email.BaseEmailMessage):
     def get_context_data(self):
         context = super().get_context_data()
         context["request_status"] = context.get("request_status")
+        context["remarks"] = context.get("remarks")
         context["url"] = FRONTEND_URL
         context.update(self.context)
         return context

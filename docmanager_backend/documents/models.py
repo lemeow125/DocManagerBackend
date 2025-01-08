@@ -9,6 +9,9 @@ class Document(models.Model):
     document_type = models.CharField(
         max_length=128, null=False, blank=False
     )
+    sent_from = models.CharField(
+        max_length=128, null=True, blank=True
+    )
     number_pages = models.IntegerField(null=False, blank=False)
     ocr_metadata = models.TextField(null=True, blank=True)
 

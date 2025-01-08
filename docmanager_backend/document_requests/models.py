@@ -27,6 +27,8 @@ class DocumentRequest(models.Model):
         ("denied", "Denied"),
     )
 
+    remarks = models.TextField(max_length=512, blank=True, null=True)
+
     status = models.CharField(
         max_length=32, choices=STATUS_CHOICES, default="pending")
 

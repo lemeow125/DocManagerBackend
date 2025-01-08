@@ -69,79 +69,84 @@ class PDFHandler(FileSystemEventHandler):
             with fitz.open(file_path) as doc:
                 num_pages = len(doc)
 
-                for page_num in range(num_pages):
-                    page = doc[page_num]
-                    pix = page.get_pixmap(matrix=(1.2, 1.2))
+                # Perform OCR only on the first page
+                page = doc[0]
+                pix = page.get_pixmap(matrix=(1.2, 1.2))
 
-                    # Convert pixmap to bytes
-                    img_bytes = pix.tobytes()
+                # Convert pixmap to bytes
+                img_bytes = pix.tobytes()
 
-                    # Create a BytesIO object
-                    img_buffer = BytesIO(img_bytes)
+                # Create a BytesIO object
+                img_buffer = BytesIO(img_bytes)
 
-                    # Create a PIL Image object from the bytes
-                    img = Image.open(img_buffer)
+                # Create a PIL Image object from the bytes
+                img = Image.open(img_buffer)
 
-                    # Perform OCR
-                    text = pytesseract.image_to_string(img).strip()
+                # Perform OCR
+                text = pytesseract.image_to_string(img).strip()
 
-                    # Try to pass image to the Ollama image recognition API first
-                    try:
-                        class DocumentCategory(BaseModel):
-                            category: str = "other"
-                            explanation: Optional[str] = None
+                # Try to pass image to the Ollama image recognition API first
+                try:
+                    class DocumentCategory(BaseModel):
+                        category: str = "other"
+                        sent_from: str = "N/A"
+                        explanation: Optional[str] = None
 
-                        client = Client(
-                            host=get_secret("OLLAMA_URL"),
-                            auth=httpx.BasicAuth(
-                                username=get_secret("OLLAMA_USERNAME"), password=get_secret("OLLAMA_PASSWORD")) if get_secret("OLLAMA_USE_AUTH") else None,
-                        )
+                    client = Client(
+                        host=get_secret("OLLAMA_URL"),
+                        auth=httpx.BasicAuth(
+                            username=get_secret("OLLAMA_USERNAME"), password=get_secret("OLLAMA_PASSWORD")) if get_secret("OLLAMA_USE_AUTH") else None,
+                    )
 
-                        encoded_image = base64.b64encode(
-                            img_buffer.getvalue()).decode()
+                    encoded_image = base64.b64encode(
+                        img_buffer.getvalue()).decode()
 
-                        possible_categories = set((Document.objects.all().values_list(
-                            "document_type", flat=True), "Documented Procedures Manual", "Form", "Special Order"))
-                        prompt = f"""
-                            Read the text from the image and provide a category. Return as JSON.
+                    possible_categories = set((Document.objects.all().values_list(
+                        "document_type", flat=True), "Documented Procedures Manual", "Form", "Special Order", "Memorandum"))
+                    prompt = f"""
+                        Read the text from the image and provide a category. Return as JSON.
 
-                            Possible categories are: {possible_categories}. You are free to create a new one if none are suitable.
-                            """
-                        response = client.chat(
-                            model=get_secret("OLLAMA_MODEL"),
-                            messages=[
-                                {"role": "user",
-                                 "content": prompt,
-                                 "images": [encoded_image]},
-                            ],
-                            format=DocumentCategory.model_json_schema(),
-                            options={
-                                "temperature": 0
-                            },
+                        Possible categories are: {possible_categories}. You are free to create a new one if none are suitable.
 
-                        )
+                        If the document is of type Special Order or Memorandum, provide the sender of the document. Possible senders are Vice President, President, Chancellor.
+                        provide N/A.
+                        """
+                    response = client.chat(
+                        model=get_secret("OLLAMA_MODEL"),
+                        messages=[
+                            {"role": "user",
+                                "content": prompt,
+                                "images": [encoded_image]},
+                        ],
+                        format=DocumentCategory.model_json_schema(),
+                        options={
+                            "temperature": 0
+                        },
 
-                        DocumentCategory.model_validate_json(
-                            response.message.content)
-                        result = json.loads(response.message.content)
-                        document_type = result.get("category")
+                    )
 
-                    # If that fails, just use regular OCR read the title as a dirty fix/fallback
-                    except Exception as e:
-                        self.logger.warning(f"Error! {e}")
-                        self.logger.warning(
-                            "Ollama OCR offload failed. Falling back to default OCR")
-                        lines = text.split("\n")
+                    DocumentCategory.model_validate_json(
+                        response.message.content)
+                    result = json.loads(response.message.content)
+                    document_type = result.get("category")
+                    sent_from = result.get("sent_from")
 
-                        for line in lines:
-                            if line.strip():
-                                document_type = line.strip().lower()
-                                break
+                # If that fails, just use regular OCR read the title as a dirty fix/fallback
+                except Exception as e:
+                    self.logger.warning(f"Error! {e}")
+                    self.logger.warning(
+                        "Ollama OCR offload failed. Falling back to default OCR")
+                    lines = text.split("\n")
 
-                        if not document_type:
-                            document_type = "other"
+                    for line in lines:
+                        if line.strip():
+                            document_type = line.strip().lower()
+                            break
 
-                    metadata += text
+                    if not document_type:
+                        document_type = "other"
+
+                metadata += text
 
             # Open the file for instance creation
             DOCUMENT, created = Document.objects.get_or_create(
@@ -158,8 +163,10 @@ class PDFHandler(FileSystemEventHandler):
                     name=filename, content=File(open(file_path, "rb")))
                 self.logger.info(
                     f"Document '{filename}' created successfully with type '{
-                        document_type}'."
+                        document_type}'. sent_from: {sent_from}"
                 )
+                DOCUMENT.sent_from = sent_from
+                DOCUMENT.save()
 
             else:
                 self.logger.info(f"Document '{filename}' already exists.")

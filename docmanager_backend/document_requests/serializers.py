@@ -35,6 +35,10 @@ class DocumentRequestCreationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context["request"].user
         documents_data = validated_data.pop("documents")
+        if not documents_data:
+            raise serializers.ValidationError(
+                {"error": "No documents provided"}
+            )
         # Set requester to user who sent HTTP request to prevent spoofing
         validated_data["requester"] = user
 

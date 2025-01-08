@@ -18,8 +18,9 @@ import logging
 import time
 from ollama import Client
 from pydantic import BaseModel
+from datetime import date, datetime
 from typing import Optional
-import json
+import calendar
 
 
 class PDFHandler(FileSystemEventHandler):
@@ -87,11 +88,6 @@ class PDFHandler(FileSystemEventHandler):
 
                 # Try to pass image to the Ollama image recognition API first
                 try:
-                    class DocumentCategory(BaseModel):
-                        category: str = "other"
-                        sent_from: str = "N/A"
-                        explanation: Optional[str] = None
-
                     client = Client(
                         host=get_secret("OLLAMA_URL"),
                         auth=httpx.BasicAuth(
@@ -101,15 +97,54 @@ class PDFHandler(FileSystemEventHandler):
                     encoded_image = base64.b64encode(
                         img_buffer.getvalue()).decode()
 
+                    # First LLM API call to determine category
+                    class DocumentSchema(BaseModel):
+                        category: str = "other"
+                        explanation: Optional[str] = None
+
                     possible_categories = set((Document.objects.all().values_list(
                         "document_type", flat=True), "Documented Procedures Manual", "Form", "Special Order", "Memorandum"))
                     prompt = f"""
-                        Read the text from the image and provide a category. Return as JSON.
+                        Read the text from the image and provide a document_type.
 
-                        Possible categories are: {possible_categories}. You are free to create a new one if none are suitable.
+                        Possible document types are: {possible_categories}. You are free to create a new one if none are suitable.
 
-                        If the document is of type Special Order or Memorandum, provide the sender of the document. Possible senders are Vice President, President, Chancellor.
-                        provide N/A.
+                        If the document_type is Special Order or Memorandum, provide the sender of the document under sent_from.
+
+                        Do all of this and return your output in JSON.
+                        """
+
+                    response = client.chat(
+                        model=get_secret("OLLAMA_MODEL"),
+                        messages=[
+                            {"role": "user",
+                                "content": prompt,
+                                "images": [encoded_image]},
+                        ],
+                        format=DocumentSchema.model_json_schema(),
+                        options={
+                            "temperature": 0
+                        },
+                    )
+                    result = DocumentSchema.model_validate_json(
+                        response.message.content)
+                    document_type = result.category
+
+                    # Second LLM API call to determine other details
+                    class DocumentSchema(BaseModel):
+                        sent_from: str = "N/A"
+                        subject: str = "N/A"
+                        document_date: Optional[date]
+                        explanation: Optional[str] = None
+
+                    prompt = f"""
+                        Determine who sent the document. Otherwise, return N/A.
+
+                        Identify the subject or possible title of the document.
+
+                        Return the date of the document if it exists.
+
+                        Do all of this and return your output in JSON.
                         """
                     response = client.chat(
                         model=get_secret("OLLAMA_MODEL"),
@@ -118,55 +153,62 @@ class PDFHandler(FileSystemEventHandler):
                                 "content": prompt,
                                 "images": [encoded_image]},
                         ],
-                        format=DocumentCategory.model_json_schema(),
+                        format=DocumentSchema.model_json_schema(),
                         options={
                             "temperature": 0
                         },
-
                     )
-
-                    DocumentCategory.model_validate_json(
+                    result = DocumentSchema.model_validate_json(
                         response.message.content)
-                    result = json.loads(response.message.content)
-                    document_type = result.get("category")
-                    sent_from = result.get("sent_from")
+
+                    sent_from = result.sent_from
+                    document_date = result.document_date
+
+                    if document_date:
+                        document_month = document_date.strftime("%B")
+                        document_year = result.document_date.year
+                        # Set as none for invalid dates
+                        if document_year < 1980:
+                            document_month = "no_month"
+                            document_year = "no_year"
+                    else:
+                        document_month = "no_month"
+                        document_year = "no_year"
 
                 # If that fails, just use regular OCR read the title as a dirty fix/fallback
                 except Exception as e:
+                    document_type = "other"
+                    sent_from = "N/A"
+                    document_month = "no_month"
+                    document_year = "no_year"
+
                     self.logger.warning(f"Error! {e}")
                     self.logger.warning(
-                        "Ollama OCR offload failed. Falling back to default OCR")
-                    lines = text.split("\n")
-
-                    for line in lines:
-                        if line.strip():
-                            document_type = line.strip().lower()
-                            break
-
-                    if not document_type:
-                        document_type = "other"
+                        "Ollama OCR offload failed. Using defaults for missing values")
 
                 metadata += text
 
             # Open the file for instance creation
-            DOCUMENT, created = Document.objects.get_or_create(
-                name=filename.replace(".pdf", ""),
-                defaults={
-                    "number_pages": num_pages,
-                    "ocr_metadata": metadata,
-                    "document_type": document_type,
-                },
-            )
+            DOCUMENT = Document.objects.filter(
+                name=filename.replace(".pdf", "")).first()
+            if not DOCUMENT:
+                DOCUMENT = Document.objects.create(
+                    name=filename.replace(".pdf", ""),
+                    number_pages=num_pages,
+                    ocr_metadata=metadata,
+                    document_type=document_type,
+                    sent_from=sent_from,
+                    document_month=document_month,
+                    document_year=document_year
+                )
 
-            if created:
                 DOCUMENT.file.save(
                     name=filename, content=File(open(file_path, "rb")))
+
                 self.logger.info(
                     f"Document '{filename}' created successfully with type '{
-                        document_type}'. sent_from: {sent_from}"
+                        document_type}'. sent_from: {sent_from}, document_month: {document_month}, document_year: {document_year}"
                 )
-                DOCUMENT.sent_from = sent_from
-                DOCUMENT.save()
 
             else:
                 self.logger.info(f"Document '{filename}' already exists.")

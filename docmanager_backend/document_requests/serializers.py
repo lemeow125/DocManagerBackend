@@ -200,9 +200,9 @@ class DocumentRequestUpdateSerializer(serializers.ModelSerializer):
         # Send an email on request status update
         try:
             email = RequestUpdateEmail()
-            email.context = {"request_status": instance.status}
-            if instance.status == "denied":
-                email.context = {"remarks": instance.remarks}
+            email.context = {"request_status": validated_data["status"]}
+            if validated_data["status"] == "denied":
+                email.context = {"remarks": validated_data["remarks"]}
             else:
                 email.context = {"remarks": "N/A"}
             email.send(to=[instance.requester.email])

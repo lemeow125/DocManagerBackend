@@ -97,7 +97,7 @@ class PDFHandler(FileSystemEventHandler):
                     encoded_image = base64.b64encode(
                         img_buffer.getvalue()).decode()
 
-                    # First LLM API call to determine category
+                    # Determine category
                     class DocumentSchema(BaseModel):
                         category: str = "other"
                         explanation: Optional[str] = None
@@ -108,8 +108,6 @@ class PDFHandler(FileSystemEventHandler):
                         Read the text from the image and provide a document_type.
 
                         Possible document types are: {possible_categories}. You are free to create a new one if none are suitable.
-
-                        If the document_type is Special Order or Memorandum, provide the sender of the document under sent_from.
 
                         Do all of this and return your output in JSON.
                         """
@@ -130,19 +128,13 @@ class PDFHandler(FileSystemEventHandler):
                         response.message.content)
                     document_type = result.category
 
-                    # Second LLM API call to determine other details
+                    # Determine sender
                     class DocumentSchema(BaseModel):
                         sent_from: str = "N/A"
-                        subject: str = "N/A"
-                        document_date: Optional[date]
                         explanation: Optional[str] = None
 
                     prompt = f"""
                         Determine who sent the document. Otherwise, return N/A.
-
-                        Identify the subject or possible title of the document.
-
-                        Return the date of the document if it exists.
 
                         Do all of this and return your output in JSON.
                         """
@@ -162,6 +154,61 @@ class PDFHandler(FileSystemEventHandler):
                         response.message.content)
 
                     sent_from = result.sent_from
+
+                    # Determine subject
+                    class DocumentSchema(BaseModel):
+                        subject: str = "N/A"
+                        explanation: Optional[str] = None
+
+                    prompt = f"""
+                        Identify the subject of the document if it exists.
+
+                        Do all of this and return your output in JSON.
+                        """
+                    response = client.chat(
+                        model=get_secret("OLLAMA_MODEL"),
+                        messages=[
+                            {"role": "user",
+                                "content": prompt,
+                                "images": [encoded_image]},
+                        ],
+                        format=DocumentSchema.model_json_schema(),
+                        options={
+                            "temperature": 0
+                        },
+                    )
+                    result = DocumentSchema.model_validate_json(
+                        response.message.content)
+
+                    document_subject = result.subject
+
+                    # Determine date
+                    class DocumentSchema(BaseModel):
+                        document_date: Optional[date]
+                        explanation: Optional[str] = None
+
+                    prompt = f"""
+                        Identify the date of the document if it exists.
+
+                        If you are unable to determine the date, return nothing.
+
+                        Do all of this and return your output in JSON.
+                        """
+                    response = client.chat(
+                        model=get_secret("OLLAMA_MODEL"),
+                        messages=[
+                            {"role": "user",
+                                "content": prompt,
+                                "images": [encoded_image]},
+                        ],
+                        format=DocumentSchema.model_json_schema(),
+                        options={
+                            "temperature": 0
+                        },
+                    )
+                    result = DocumentSchema.model_validate_json(
+                        response.message.content)
+
                     document_date = result.document_date
 
                     if document_date:
@@ -199,7 +246,8 @@ class PDFHandler(FileSystemEventHandler):
                     document_type=document_type,
                     sent_from=sent_from,
                     document_month=document_month,
-                    document_year=document_year
+                    document_year=document_year,
+                    subject=document_subject
                 )
 
                 DOCUMENT.file.save(

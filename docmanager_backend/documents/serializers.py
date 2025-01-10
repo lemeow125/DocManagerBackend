@@ -84,6 +84,9 @@ class DocumentFileSerializer(serializers.ModelSerializer):
             "ocr_metadata",
             "date_uploaded",
             "sent_from",
+            "document_month",
+            "document_year",
+            "subject",
             "file",
         ]
         read_only_fields = [
@@ -94,5 +97,8 @@ class DocumentFileSerializer(serializers.ModelSerializer):
             "ocr_metadata",
             "date_uploaded",
             "sent_from",
+            "document_month",
+            "document_year",
+            "subject",
             "file",
         ]

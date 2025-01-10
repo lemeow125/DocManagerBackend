@@ -42,6 +42,10 @@ class DocumentRequestCreationSerializer(serializers.ModelSerializer):
         # Set requester to user who sent HTTP request to prevent spoofing
         validated_data["requester"] = user
 
+        if validated_data["type"] == "softcopy":
+            raise serializers.ValidationError(
+                {"error": "Hardcopy requests are not accepted as of now"}
+            )
         DOCUMENT_REQUEST = DocumentRequest.objects.create(**validated_data)
 
         DOCUMENT_REQUEST_UNITS = []

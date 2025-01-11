@@ -10,6 +10,10 @@ class DocumentUpdateSerializer(serializers.ModelSerializer):
             "name",
             "document_type",
             "number_pages",
+            "sent_from",
+            "document_month",
+            "document_year",
+            "subject"
         ]
 
 
@@ -28,9 +32,13 @@ class DocumentUploadSerializer(serializers.ModelSerializer):
             "file",
             "document_type",
             "number_pages",
+            "sent_from",
+            "document_month",
+            "document_year",
+            "subject",
             "date_uploaded",
         ]
-        read_only_fields = ["id", "date-uploaded"]
+        read_only_fields = ["id", "date_uploaded"]
 
 
 class DocumentDeleteSerializer(serializers.ModelSerializer):

@@ -267,7 +267,7 @@ AUTH_USER_MODEL = "accounts.CustomUser"
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 20480
 
 GRAPH_MODELS = {
-    "app_labels": ["accounts", "documents", "document_requests", "questionnaires"]
+    "app_labels": ["accounts", "documents", "document_requests", "questionnaires", "authorization_requests"]
 }
 
 CORS_ORIGIN_ALLOW_ALL = True

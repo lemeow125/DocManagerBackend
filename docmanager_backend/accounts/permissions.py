@@ -29,3 +29,12 @@ class IsHead(BasePermission):
 
     def has_permission(self, request, view):
         return bool(request.user and request.user.role == "head")
+
+
+class IsAdmin(BasePermission):
+    """
+    Allows access only to users with admin role
+    """
+
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.role == "admin")

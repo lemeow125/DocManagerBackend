@@ -5,6 +5,15 @@ from django.core import exceptions as django_exceptions
 from rest_framework.settings import api_settings
 
 
+class CustomUserUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomUser
+        fields = [
+            "role"
+        ]
+
+
 class CustomUserSerializer(serializers.ModelSerializer):
     birthday = serializers.DateField(format="%Y-%m-%d")
 

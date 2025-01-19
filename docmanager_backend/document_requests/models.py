@@ -25,6 +25,8 @@ class DocumentRequest(models.Model):
         ("pending", "Pending"),
         ("approved", "Approved"),
         ("denied", "Denied"),
+        ("claimed", "Claimed"),
+        ("unclaimed", "Unclaimed"),
     )
 
     remarks = models.TextField(max_length=512, blank=True, null=True)

@@ -12,13 +12,18 @@ def create_admin_user(sender, **kwargs):
     if sender.name == "accounts":
         users = [{
             "email": get_secret("ADMIN_EMAIL"),
-            "role": "head",
+            "role": "admin",
             "admin": True,
         }, {
             "email": "staff@test.com",
             "role": "staff",
             "admin": False,
         }, {
+            "email": "head@test.com",
+            "role": "head",
+            "admin": False,
+        },
+            {
             "email": "planning@test.com",
             "role": "planning",
             "admin": False,

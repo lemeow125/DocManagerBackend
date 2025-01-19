@@ -6,10 +6,11 @@ from rest_framework.pagination import PageNumberPagination
 from .serializers import (
     AuthorizationRequestCreationSerializer,
     AuthorizationRequestSerializer,
-    AuthorizationRequestUpdateSerializer
+    AuthorizationRequestUpdateSerializer,
+    AuthorizationRequestUnitUpdateSerializer
 )
 
-from .models import AuthorizationRequest
+from .models import AuthorizationRequest, AuthorizationRequestUnit
 
 
 class AuthorizationRequestCreateView(generics.CreateAPIView):
@@ -51,3 +52,14 @@ class AuthorizationRequestUpdateView(generics.UpdateAPIView):
     serializer_class = AuthorizationRequestUpdateSerializer
     permission_classes = [IsAuthenticated, IsHead]
     queryset = AuthorizationRequest.objects.all()
+
+
+class AuthorizationRequestUnitUpdateView(generics.UpdateAPIView):
+    """
+    Used by head approve or deny authorization request units.
+    """
+
+    http_method_names = ["patch"]
+    serializer_class = AuthorizationRequestUnitUpdateSerializer
+    permission_classes = [IsAuthenticated, IsHead]
+    queryset = AuthorizationRequestUnit.objects.all()

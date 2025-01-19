@@ -182,22 +182,29 @@ class DocumentRequestUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
     def update(self, instance, validated_data):
-        print(validated_data)
-        if instance.status == "denied" or instance.status == "approved":
-            raise serializers.ValidationError(
-                {
-                    "error": "Already approved/denied requests cannot be updated. You should instead create a new request and approve it from there"
-                }
-            )
-        elif "status" not in validated_data:
+        if "status" not in validated_data:
             raise serializers.ValidationError(
                 {
                     "error": "No status value update provided"
                 }
             )
+        elif instance.status == "denied" or instance.status == "claimed":
+            raise serializers.ValidationError(
+                {
+                    "error": "Already claimed/denied requests cannot be updated. You should instead create a new request and approve it from there"
+                }
+            )
         elif validated_data["status"] == instance.status:
             raise serializers.ValidationError(
                 {"error": "Request form status provided is the same as current status"}
+            )
+        elif instance.status == "approved" and validated_data["status"] not in ["claimed", "unclaimed"]:
+            raise serializers.ValidationError(
+                {"error": "Approved request forms can only be marked as claimed or unclaimed"}
+            )
+        elif instance.status == "unclaimed" and validated_data["status"] not in ["claimed"]:
+            raise serializers.ValidationError(
+                {"error": "Unclaimed request forms can only be marked as claimed"}
             )
         elif validated_data["status"] == "denied" and "remarks" not in validated_data:
             raise serializers.ValidationError(
@@ -208,10 +215,11 @@ class DocumentRequestUpdateSerializer(serializers.ModelSerializer):
         # Send an email on request status update
         try:
             email = RequestUpdateEmail()
-            email.context = {"request_status": validated_data["status"]}
             if validated_data["status"] == "denied":
+                email.context = {"request_status": "denied"}
                 email.context = {"remarks": validated_data["remarks"]}
             else:
+                email.context = {"request_status": "approved"}
                 email.context = {"remarks": "N/A"}
             email.send(to=[instance.requester.email])
         except:

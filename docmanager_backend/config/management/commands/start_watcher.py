@@ -18,9 +18,8 @@ import logging
 import time
 from ollama import Client
 from pydantic import BaseModel
-from datetime import date, datetime
+from datetime import date
 from typing import Optional
-import calendar
 
 
 class PDFHandler(FileSystemEventHandler):
@@ -237,10 +236,10 @@ class PDFHandler(FileSystemEventHandler):
 
             # Open the file for instance creation
             DOCUMENT = Document.objects.filter(
-                name=filename.replace(".pdf", "")).first()
+                name=document_subject).first()
             if not DOCUMENT:
                 DOCUMENT = Document.objects.create(
-                    name=filename.replace(".pdf", ""),
+                    name=document_subject,
                     number_pages=num_pages,
                     ocr_metadata=metadata,
                     document_type=document_type,
@@ -254,12 +253,13 @@ class PDFHandler(FileSystemEventHandler):
                     name=filename, content=File(open(file_path, "rb")))
 
                 self.logger.info(
-                    f"Document '{filename}' created successfully with type '{
+                    f"Document created successfully from '{filename}' with type '{
                         document_type}'. sent_from: {sent_from}, document_month: {document_month}, document_year: {document_year}"
                 )
 
             else:
-                self.logger.info(f"Document '{filename}' already exists.")
+                self.logger.info(
+                    f"Document '{document_subject}' already exists.")
 
             os.remove(file_path)
         except Exception as e:

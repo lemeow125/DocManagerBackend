@@ -1,11 +1,11 @@
 {% load i18n %}
 
 {% block subject %}
-  {% blocktrans %}USTP - Document Request Form Update{% endblocktrans %}
+  {% blocktrans %}USTP - Request Form Update{% endblocktrans %}
 {% endblock %}
 
 {% block text_body %}
-  {% blocktrans %}You're receiving this email because your document request has been {{ request_status }}.{% endblocktrans %}
+  {% blocktrans %}You're receiving this email because your request form has been {{ request_status }}.{% endblocktrans %}
 
   {% blocktrans %}Remarks: {{ remarks }}{% endblocktrans %}
 
@@ -17,7 +17,7 @@
 
 {% block html_body %}
   <p>
-    {% blocktrans %}You're receiving this email because your document request has been {{ request_status }}.{% endblocktrans %}
+    {% blocktrans %}You're receiving this email because your request form has been {{ request_status }}.{% endblocktrans %}
   </p>
 
   <p>

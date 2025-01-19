@@ -3,6 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions as django_exceptions
 from rest_framework.settings import api_settings
+from django.utils.timezone import now, localdate
 
 
 class CustomUserUpdateSerializer(serializers.ModelSerializer):
@@ -15,7 +16,7 @@ class CustomUserUpdateSerializer(serializers.ModelSerializer):
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    birthday = serializers.DateField(format="%Y-%m-%d")
+    birthday = serializers.DateField(format="%m-%d-%Y")
 
     class Meta:
         model = CustomUser
@@ -52,7 +53,7 @@ class CustomUserRegistrationSerializer(serializers.ModelSerializer):
     )
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
-    birthday = serializers.DateField(format="%Y-%m-%d", required=True)
+    birthday = serializers.DateField(format="%m-%d-%Y", required=True)
 
     class Meta:
         model = CustomUser
@@ -76,6 +77,30 @@ class CustomUserRegistrationSerializer(serializers.ModelSerializer):
         if self.Meta.model.objects.filter(username=attrs.get("email")).exists():
             raise serializers.ValidationError(
                 "A user with that email already exists.")
+
+        # Only allow major email providers
+        email = attrs.get("email")
+        allowed_email_domains = ["gmail.com", "outlook.com", "ustp.edu.ph"]
+
+        if not any(provider in email for provider in allowed_email_domains):
+            raise serializers.ValidationError(
+                "Non-major email providers are not supported")
+
+        # Validate age based on birthday
+        birthday = attrs.get("birthday")
+        date_now = localdate(now())
+        age = (
+            date_now.year
+            - birthday.year
+            - (
+                (date_now.month, date_now.day)
+                < (birthday.month, birthday.day)
+            )
+        )
+
+        if age < 16:
+            raise serializers.ValidationError(
+                "You need to be at least 16 years old to avail of this USTP service")
         return super().validate(attrs)
 
     def create(self, validated_data):

@@ -2,6 +2,7 @@ from rest_framework import serializers
 from accounts.models import CustomUser
 from emails.templates import RequestUpdateEmail
 from .models import AuthorizationRequest, AuthorizationRequestUnit
+from notifications.models import Notification
 
 
 class AuthorizationRequestUnitCreationSerializer(serializers.ModelSerializer):
@@ -60,6 +61,11 @@ class AuthorizationRequestCreationSerializer(serializers.ModelSerializer):
 
         AUTHORIZATION_REQUEST.documents.set(AUTHORIZATION_REQUEST_UNITS)
         AUTHORIZATION_REQUEST.save()
+
+        Notification.objects.create(
+            type="info",
+            audience="head",
+            content=f"A new authorization request ID:{AUTHORIZATION_REQUEST.id} requires your attention")
 
         return AUTHORIZATION_REQUEST
 
@@ -148,7 +154,14 @@ class AuthorizationRequestUnitUpdateSerializer(serializers.ModelSerializer):
             # And send an email notification
             email = RequestUpdateEmail()
             email.context = {"request_status": "approved"}
+            email.context = {"remarks": "N/A"}
             email.send(to=[instance.authorization_request.requester.email])
+
+            Notification.objects.create(
+                client=instance.authorization_request.requester,
+                type="info",
+                audience="client",
+                content=f"Your authorization request ID:{instance.authorization_request.id} has been approved")
         return representation
 
 
@@ -199,9 +212,19 @@ class AuthorizationRequestUpdateSerializer(serializers.ModelSerializer):
             if validated_data["status"] == "denied":
                 email.context = {"request_status": "denied"}
                 email.context = {"remarks": validated_data["remarks"]}
+                Notification.objects.create(
+                    client=instance.requester,
+                    type="info",
+                    audience="client",
+                    content=f"Your authorization request ID:{instance.id} has been denied")
             else:
                 email.context = {"request_status": "approved"}
                 email.context = {"remarks": "N/A"}
+                Notification.objects.create(
+                    client=instance.requester,
+                    type="info",
+                    audience="client",
+                    content=f"Your authorization request ID:{instance.id} has been approved")
             email.send(to=[instance.requester.email])
         except Exception as e:
             # Silence out errors if email sending fails

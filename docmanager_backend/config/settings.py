@@ -98,6 +98,7 @@ INSTALLED_APPS = [
     "document_requests",
     "authorization_requests",
     "questionnaires",
+    "notifications",
     "django_cleanup.apps.CleanupConfig",
 ]
 
@@ -267,7 +268,7 @@ AUTH_USER_MODEL = "accounts.CustomUser"
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 20480
 
 GRAPH_MODELS = {
-    "app_labels": ["accounts", "documents", "document_requests", "questionnaires", "authorization_requests"]
+    "app_labels": ["accounts", "documents", "document_requests", "questionnaires", "authorization_requests", "notifications"]
 }
 
 CORS_ORIGIN_ALLOW_ALL = True

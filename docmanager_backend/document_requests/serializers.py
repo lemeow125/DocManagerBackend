@@ -5,6 +5,7 @@ from questionnaires.models import Questionnaire
 from accounts.models import CustomUser
 from emails.templates import RequestUpdateEmail
 from .models import DocumentRequest, DocumentRequestUnit
+from notifications.models import Notification
 
 
 class DocumentRequestUnitCreationSerializer(serializers.ModelSerializer):
@@ -59,6 +60,11 @@ class DocumentRequestCreationSerializer(serializers.ModelSerializer):
 
         DOCUMENT_REQUEST.documents.set(DOCUMENT_REQUEST_UNITS)
         DOCUMENT_REQUEST.save()
+
+        Notification.objects.create(
+            type="info",
+            audience="head",
+            content=f"A new document request ID:{DOCUMENT_REQUEST.id} requires your attention")
 
         return DOCUMENT_REQUEST
 
@@ -218,9 +224,19 @@ class DocumentRequestUpdateSerializer(serializers.ModelSerializer):
             if validated_data["status"] == "denied":
                 email.context = {"request_status": "denied"}
                 email.context = {"remarks": validated_data["remarks"]}
+                Notification.objects.create(
+                    client=instance.requester,
+                    type="info",
+                    audience="client",
+                    content=f"Your authorization request ID:{instance.id} has been denied")
             else:
                 email.context = {"request_status": "approved"}
                 email.context = {"remarks": "N/A"}
+                Notification.objects.create(
+                    client=instance.requester,
+                    type="info",
+                    audience="client",
+                    content=f"Your authorization request ID:{instance.id} has been approved")
             email.send(to=[instance.requester.email])
         except:
             # Silence out errors if email sending fails

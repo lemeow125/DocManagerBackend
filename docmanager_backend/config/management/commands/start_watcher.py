@@ -20,6 +20,7 @@ from ollama import Client
 from pydantic import BaseModel
 from datetime import date
 from typing import Optional
+from notifications.models import Notification
 
 
 class PDFHandler(FileSystemEventHandler):
@@ -223,6 +224,7 @@ class PDFHandler(FileSystemEventHandler):
 
                 # If that fails, just use regular OCR read the title as a dirty fix/fallback
                 except Exception as e:
+                    document_subject = "placeholder_document_name"
                     document_type = "other"
                     sent_from = "N/A"
                     document_month = "no_month"
@@ -231,6 +233,11 @@ class PDFHandler(FileSystemEventHandler):
                     self.logger.warning(f"Error! {e}")
                     self.logger.warning(
                         "Ollama OCR offload failed. Using defaults for missing values")
+
+                    Notification.objects.create(
+                        type="warning",
+                        audience="staff",
+                        content=f"Ollama OCR failed for document {document_subject}. Please check if the Ollama API is reachable.")
 
                 metadata += text
 
@@ -257,9 +264,18 @@ class PDFHandler(FileSystemEventHandler):
                         document_type}'. sent_from: {sent_from}, document_month: {document_month}, document_year: {document_year}"
                 )
 
+                Notification.objects.create(
+                    type="info",
+                    audience="staff",
+                    content=f"New Document Scanned: {document_subject}.")
+
             else:
                 self.logger.info(
                     f"Document '{document_subject}' already exists.")
+                Notification.objects.create(
+                    type="info",
+                    audience="staff",
+                    content=f"Skipping Scanned Document {document_subject}: Already exists.")
 
             os.remove(file_path)
         except Exception as e:

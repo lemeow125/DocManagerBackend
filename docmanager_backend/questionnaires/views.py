@@ -15,7 +15,14 @@ class QuestionnaireListAPIView(generics.ListAPIView):
     serializer_class = QuestionnaireSerializer
     queryset = Questionnaire.objects.all()
     pagination_class = PageNumberPagination
-    permission_classes = [IsAuthenticated, IsPlanning]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == "client":
+            return Questionnaire.objects.filter(client=user)
+        else:
+            return Questionnaire.objects.all()
 
 
 class QuestionnaireSubmitView(generics.CreateAPIView):
